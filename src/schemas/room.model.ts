@@ -9,10 +9,22 @@ export class Room {
   name: string;
 
   @Prop()
-  description: string;
+  room_id: string;
 
-  @Prop()
-  owner: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  createdBy: mongoose.Schema.Types.ObjectId;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    default: [],
+  })
+  members: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
+    default: [],
+  })
+  messages: mongoose.Schema.Types.ObjectId[];
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

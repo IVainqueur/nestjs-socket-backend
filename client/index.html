@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="login" onsubmit="return login(this);">
+        <h1>login form</h1>
+        <input type="text" name="username" id="username">
+        <input type="password" name="password" id="password">
+        <button type="submit">Login</button>
+    </form>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <h1>Client</h1>
+    <form onsubmit="return newroom()">
+        <h4>new room</h4>
+        <input type="text" name="" id="new_room_name" placeholder="new room">
+        <button>New room</button>
+    </form>
+    <br><br><br>
+    <button onclick="getRooms()">get all rooms</button>
+    <form action="" onsubmit="return sendMessage()">
+        <select name="" id="rooms"></select>
+        <input type="text" name="message" id="message">
+        <button type="submit">Send</button>
+    </form>
+
+
+</body>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"
+    integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous">
+</script>
+<script>
+    const socket = io('http://192.168.1.78');
+    socket.on('connect', () => {
+        console.log('connected');
+    });
+
+    function login(e) {
+        e.returnValue = false;
+        console.log('login')
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        console.log({
+            username,
+            password
+        })
+        fetch('http://' + window.location.hostname + '/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            }).then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.success) {
+                    localStorage.setItem('access_token', data.access_token);
+                }
+            }).catch(err => {
+                console.log(err);
+            });
+        return false;
+    }
+
+    function newroom() {
+        const access_token = localStorage.getItem('access_token');
+        const room_name = document.getElementById('new_room_name').value;
+        socket.emit('create_room', {
+            access_token,
+            room_name
+        })
+        return false;
+    }
+
+    socket.on('new_room_created', (data) => {
+        console.log('Just heard of a new room');
+    })
+
+    function sendMessage() {
+        const access_token = localStorage.getItem('access_token');
+        const message = document.getElementById('message').value;
+        const room_id = document.getElementById('rooms').value;
+        socket.emit('message_sent', {
+            access_token,
+            message,
+            room_id
+        })
+        return false;
+    }
+
+    function getRooms() {
+        const access_token = localStorage.getItem('access_token');
+        socket.emit('get_rooms')
+    }
+
+    socket.on('all_rooms', (data) => {
+        console.log('All rooms', data);
+        const rooms = document.getElementById('rooms');
+        rooms.innerHTML = '';
+        data.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.room_id;
+            option.innerText = room.name;
+            rooms.appendChild(option);
+        })
+
+
+    })
+
+    socket.on('new_message', (data) => {
+        console.log('New message', data);
+    })
+</script>
+
+</html>

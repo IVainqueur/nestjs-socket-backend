@@ -13,7 +13,10 @@ export default class UsersService {
   async create(userInfo: User): Promise<User> {
     // add new user to mongodb database
     try {
-      const user = new this.userModel(userInfo);
+      const user = new this.userModel({
+        ...userInfo,
+        profilePicture: `https://avatars.dicebear.com/api/adventurer/${userInfo.username}.png`,
+      });
       await user.save();
       return user;
     } catch (error) {

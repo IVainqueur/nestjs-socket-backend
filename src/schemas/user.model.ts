@@ -13,6 +13,11 @@ export class User {
 
   @Prop()
   password: string;
+
+  @Prop({
+    default: 'https://avatars.dicebear.com/api/adventurer/uzi_chat.png',
+  })
+  profilePicture: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
