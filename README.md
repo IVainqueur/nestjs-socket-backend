@@ -9,7 +9,7 @@ The backend will have a socket and just 3 endpoints
 
   The request will contain:
   + `fullName`
-  + `userName`
+  + `username`
   + `password`
 
   then the user will be saved in a mongodb database with the above fields and a randomly assigned avatar profile picture. ( the password will be hashed, of course! )
@@ -17,7 +17,7 @@ The backend will have a socket and just 3 endpoints
 - `/auth/login`: to login a user to know who is sending the messages.
 
   The request will contain:
-  + `userName`
+  + `username`
   + `password`
 
   The response will contain: 
@@ -34,6 +34,8 @@ Then the rest of the requests will be handled by the `socket.io`. Here are some 
 * `new_room_created`: for when a "new room is created". 
 
 * `user_joined`: for when a user joins a specific room.
+
+* `leave_room`: for when a user requests to leave a room.
 
 * `user_left`: for when a user leaves a specific room.
 
