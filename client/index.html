@@ -114,7 +114,7 @@
     socket.on('all_rooms', (data) => {
         console.log('All rooms', data);
         const rooms = document.getElementById('rooms');
-        rooms.innerHTML = '';
+        rooms.innerHTML = '<option value="">Select room</option>';
         data.forEach(room => {
             const option = document.createElement('option');
             option.value = room.room_id;
@@ -122,11 +122,22 @@
             rooms.appendChild(option);
         })
 
+        rooms.onchange = () => {
+            const room_id = rooms.value;
+            socket.emit('join_room', {
+                room_id,
+                access_token: localStorage.getItem('access_token')
+            })
+        }
 
     })
 
     socket.on('new_message', (data) => {
         console.log('New message', data);
+    })
+
+    socket.on('all_room_messages', (data) => {
+        console.log('All %s messages', data.room_id, data);
     })
 </script>
 

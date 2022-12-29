@@ -10,6 +10,6 @@ async function bootstrap() {
       'http://192.168.1.78',
     ],
   });
-  await app.listen(80);
+  await app.listen(process.env.PORT || 80);
 }
 bootstrap();

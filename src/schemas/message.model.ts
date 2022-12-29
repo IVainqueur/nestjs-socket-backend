@@ -8,8 +8,8 @@ export class Message {
   @Prop()
   content: string;
 
-  @Prop()
-  sender: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  sender: mongoose.Types.ObjectId | string;
 
   @Prop({ default: Date.now })
   sentDate?: Date;

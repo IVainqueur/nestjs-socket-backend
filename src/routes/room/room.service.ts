@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ErrorChecker } from 'src/custom.decorators';
 import { Message } from 'src/schemas/message.model';
 import { Room } from 'src/schemas/room.model';
@@ -35,7 +35,15 @@ export class RoomService {
 
   @ErrorChecker()
   async getRooms() {
-    const rooms = await this.roomModel.find({}).select('name room_id');
+    const rooms = await this.roomModel
+      .find({}, { name: 1, room_id: 1, messages: { $slice: -1 } })
+      .populate({
+        path: 'messages',
+        populate: {
+          path: 'sender',
+          select: 'username',
+        },
+      });
     return rooms;
   }
 
@@ -47,17 +55,19 @@ export class RoomService {
 
   @ErrorChecker()
   async getMessages(roomId: string) {
-    const room = await this.roomModel
-      .findOne({ room_id: roomId })
-      .populate('messages');
+    const room = await this.roomModel.findOne({ room_id: roomId }).populate({
+      path: 'messages',
+      populate: {
+        path: 'sender',
+        select: 'username fullName',
+      },
+    });
     return room.messages;
   }
 
   @ErrorChecker()
   async addMessage(roomId: string, access_token: string, message: Message) {
-    console.log('line 58');
     const decodedToken = Utils.decodeJWT(access_token);
-    console.log('line 60');
     const room = await this.roomModel
       .findOne({ room_id: roomId })
       .populate('messages');
@@ -71,19 +81,25 @@ export class RoomService {
     });
     room.messages.push(newMessage._id as any);
     await room.save();
-    console.log('saved message: ', newMessage);
     return newMessage;
   }
 
   @ErrorChecker()
-  async addMember(roomId: string, username: string) {
-    const room = await this.roomModel
-      .findOne({ room_id: roomId })
-      .populate('members');
+  async addMember(roomId: string, access_token: string) {
+    const decodedToken = Utils.decodeJWT(access_token);
+    const username = decodedToken.username;
+    const room = await this.roomModel.findOne({ room_id: roomId });
     const user = await this.userModel
       .findOne({ username: username })
       .select('_id');
-    room.members.push(user._id as any);
+    const previousMembers = new Set(
+      room.members.map((member) => member.toString()),
+    );
+
+    previousMembers.add(user._id.toString());
+    room.members = Array.from(previousMembers).map(
+      (member) => new mongoose.Types.ObjectId(member) as any,
+    );
     await room.save();
     return room;
   }

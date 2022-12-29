@@ -13,7 +13,11 @@ import { User, UserSchema } from './schemas/user.model';
     ConfigModule.forRoot({
       envFilePath: '.env',
     }),
-    MongooseModule.forRoot(process.env.MONGO_URI),
+    MongooseModule.forRoot(
+      process.env.NODE_ENV === 'production'
+        ? process.env.MONGO_URI
+        : process.env.MONGO_URI_LOCAL,
+    ),
     MongooseModule.forFeature([{ name: Room.name, schema: RoomSchema }]),
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
