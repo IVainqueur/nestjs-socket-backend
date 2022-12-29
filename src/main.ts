@@ -10,6 +10,7 @@ async function bootstrap() {
       'http://192.168.1.78:5500',
       'http://192.168.1.78',
       'http://localhost:5173',
+      'https://uzichat.vercel.app',
     ],
   });
   await app.listen(process.env.PORT || 80);
