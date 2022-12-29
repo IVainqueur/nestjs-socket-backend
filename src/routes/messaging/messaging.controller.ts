@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { RoomService } from '../room/room.service';
+import Utils from '../../Utils';
 
 @WebSocketGateway({
   cors: {
@@ -36,11 +37,35 @@ export class SocketsGateway
 
   @SubscribeMessage('message_sent')
   receiveMessage(@ConnectedSocket() client: any, @MessageBody() body: any) {
+    const decodedToken = Utils.decodeJWT(body.access_token);
     // emit 'new_message' event to all connected users
-    this.server.to(body.room_id).emit('new_message', body);
+    this.server.to(body.room_id).emit('new_message', {
+      content: body.message,
+      sender: {
+        username: decodedToken.username,
+        fullName: decodedToken.fullName,
+      },
+      room_id: body.room_id,
+      sentDate: new Date(),
+    });
     this.roomService.addMessage(body.room_id, body.access_token, {
       content: body.message,
       sender: '',
+    });
+  }
+
+  // Subscribe to get all messages in a room
+  @SubscribeMessage('get_room_messages')
+  async getRoomMessages(
+    @ConnectedSocket() client: any,
+    @MessageBody() body: any,
+  ) {
+    if (!body.room_id) return;
+    const allMessages = await this.roomService.getMessages(body.room_id);
+    // emit 'all_room_messages' event to all connected users
+    client.emit('all_room_messages', {
+      messages: allMessages,
+      room_id: body.room_id,
     });
   }
 
@@ -63,6 +88,8 @@ export class SocketsGateway
 
   @SubscribeMessage('join_room')
   async joinRoom(@ConnectedSocket() client: any, @MessageBody() body: any) {
+    if (!body.room_id) return;
+
     // emit 'user_joined' event to all connected users
     this.server.to(body.room_id).emit('user_joined', body);
     client.join(body.room_id);
@@ -70,6 +97,7 @@ export class SocketsGateway
     const allMessages = await this.roomService.getMessages(body.room_id);
     client.emit('all_room_messages', {
       room_id: body.room_id,
+      name: body.name,
       messages: allMessages,
     });
   }

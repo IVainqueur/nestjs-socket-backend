@@ -67,6 +67,7 @@ export class RoomService {
 
   @ErrorChecker()
   async addMessage(roomId: string, access_token: string, message: Message) {
+    if (!roomId || !access_token || !message) return;
     const decodedToken = Utils.decodeJWT(access_token);
     const room = await this.roomModel
       .findOne({ room_id: roomId })
@@ -86,6 +87,8 @@ export class RoomService {
 
   @ErrorChecker()
   async addMember(roomId: string, access_token: string) {
+    console.log({ roomId, access_token });
+    if (!roomId || !access_token) return;
     const decodedToken = Utils.decodeJWT(access_token);
     const username = decodedToken.username;
     const room = await this.roomModel.findOne({ room_id: roomId });
