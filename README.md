@@ -1,4 +1,4 @@
-# Uzi Chat backend
+# NestJS-Socket-Backend
 
 ## Description
 Uzi Chat is a chatroom service in a which a user can sign into their previously created account and join or create a new chatroom that other users can join to chat with each other.
