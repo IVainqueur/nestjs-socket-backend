@@ -1,10 +1,7 @@
 # NestJS-Socket-Backend
 
-## Description
-Uzi Chat is a chatroom service in a which a user can sign into their previously created account and join or create a new chatroom that other users can join to chat with each other.
-
 ## Technical side
-The backend will have a socket and just 3 endpoints
+This backend will have a socket and just 3 endpoints
 - `/auth/signup` : to create a new user account. 
 
   The request will contain:
